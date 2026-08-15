@@ -12,11 +12,9 @@ const CONFIG = {
   // Pos Ronda > klik angka koordinat yang muncul paling atas untuk menyalin.
   POS_LAT: -7.3481181,
   POS_LNG: 108.3864744,
-  RADIUS_METER: 50000000, // toleransi jarak maksimal (meter) dari Pos Ronda
+  RADIUS_METER: 30, // toleransi jarak maksimal (meter) dari Pos Ronda
 
   // --- 2. URL BACKEND (Cloud Relay / Google Apps Script) -------------------
-  // WAJIB DIGANTI setelah Apps Script di-deploy (lihat README.md Langkah 2).
-  // Contoh: "https://script.google.com/macros/s/AKfycb..../exec"
   WEBHOOK_URL: "https://script.google.com/macros/s/AKfycbzHxsgzsonpRHwYcIWGk_rS8WqkgCLLgV1fxjjsIAjglWeOK4aU4N1DS_TdEQfITXen/exec",
 
   // --- 3. KATA SANDI SINKRONISASI ------------------------------------------
@@ -34,36 +32,36 @@ const CONFIG = {
   // --- 6. JAM ABSEN DIBUKA (waktu WIB / Asia-Jakarta) -----------------------
   // Malam Jumat pukul 21:00 s/d Sabtu pukul 01:00.
   // Nilai "hari" pakai standar JavaScript: 0=Minggu, 1=Senin ... 6=Sabtu.
-  JAM_MULAI: { hari: 6, jam: 0, menit: 0 }, // Jumat 21:00
-  JAM_SELESAI: { hari: 0, jam: 23, menit: 59 }, // Sabtu 01:00
+  JAM_MULAI: { hari: 5, jam: 21, menit: 0 }, // Jumat 21:00
+  JAM_SELESAI: { hari: 6, jam: 1, menit: 0 }, // Sabtu 01:00
 
-  // --- 7. JADWAL & PEMBAGIAN GRUP RONDA (M1 - M6) ---------------------------
+  // --- 7. JADWAL & PEMBAGIAN GRUP RONDA (G1 - G6) ---------------------------
   // Tambah / kurangi / ganti nama sesuai kebutuhan RT/RW Anda.
   JADWAL: {
-    M1: ["Pak Aziz", "Pak Ujang", "Pak Arif", "Pak Nandang"],
-    M2: ["Pak Omen", "Pak Nana", "Pak Dadan", "Pak Dudung"],
-    M3: ["Pak Sayyid", "Pak Feri", "Pak Egi", "Pak Dodi", "Pak Karwan"],
-    M4: ["Pak Asep", "Pak Iwan", "Pak Toni", "Pak Fajar"],
-    M5: ["Pak Oky", "Pak Ali", "Pak Rian", "Pak Ahmad Dani", "Pak Alfian"],
-    M6: ["Pak Anggi", "Pak Heri", "Pak Iik", "Pak Ayi"]
+    G1: ["Pak Aziz", "Pak Ujang", "Pak Arif", "Pak Nandang"],
+    G2: ["Pak Omen", "Pak Nana", "Pak Dadan", "Pak Dudung"],
+    G3: ["Pak Sayyid", "Pak Feri", "Pak Egi", "Pak Dodi", "Pak Karwan"],
+    G4: ["Pak Asep", "Pak Iwan", "Pak Toni", "Pak Fajar"],
+    G5: ["Pak Oky", "Pak Ali", "Pak Rian", "Pak Ahmad Dani", "Pak Alfian"],
+    G6: ["Pak Anggi", "Pak Heri", "Pak Iik", "Pak Ayi"]
   },
 
   // --- 8. TITIK ACUAN ROTASI GRUP -------------------------------------------
   // Tanggal Sabtu ini dijadikan patokan awal, beserta grup yang bertugas
   // pada tanggal tersebut. Grup minggu-minggu lain dihitung otomatis
-  // maju/mundur dari titik ini (urutan M1 -> M2 -> ... -> M6 -> M1 ...).
+  // maju/mundur dari titik ini (urutan G1 -> G2 -> ... -> G6 -> G1 ...).
   ROTASI_ACUAN_TANGGAL: "2026-08-15", // Sabtu, 15 Agustus 2026
-  ROTASI_ACUAN_GRUP: "M3"             // grup yang bertugas pada tanggal di atas
+  ROTASI_ACUAN_GRUP: "G3"             // grup yang bertugas pada tanggal di atas
 };
 
 // ============================================================================
 // FUNGSI BANTU BERSAMA (dipakai oleh warga & admin) — TIDAK PERLU DIUBAH
 // ============================================================================
 
-// Menentukan grup (M1-M6) yang bertugas pada tanggal tertentu (default: hari ini)
+// Menentukan grup (G1-G6) yang bertugas pada tanggal tertentu (default: hari ini)
 function grupMingguIni(tanggal) {
   tanggal = tanggal || new Date();
-  const namaGrup = Object.keys(CONFIG.JADWAL); // ["M1","M2",...,"M6"]
+  const namaGrup = Object.keys(CONFIG.JADWAL); // ["G1","G2",...,"G6"]
   const acuan = new Date(CONFIG.ROTASI_ACUAN_TANGGAL + "T00:00:00");
 
   // Normalisasi ke tengah malam supaya perbandingan tanggal akurat
@@ -80,7 +78,7 @@ function grupMingguIni(tanggal) {
   return namaGrup[idx];
 }
 
-// Mencari nama grup (M1-M6) tempat seorang warga terdaftar
+// Mencari nama grup (G1-G6) tempat seorang warga terdaftar
 function cariGrupDariNama(nama) {
   for (const grup in CONFIG.JADWAL) {
     if (CONFIG.JADWAL[grup].includes(nama)) return grup;
