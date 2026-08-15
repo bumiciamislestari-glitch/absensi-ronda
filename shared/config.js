@@ -12,7 +12,7 @@ const CONFIG = {
   // Pos Ronda > klik angka koordinat yang muncul paling atas untuk menyalin.
   POS_LAT: -7.3481181,
   POS_LNG: 108.3864744,
-  RADIUS_METER: 30, // toleransi jarak maksimal (meter) dari Pos Ronda
+  RADIUS_METER: 50000000, // toleransi jarak maksimal (meter) dari Pos Ronda
 
   // --- 2. URL BACKEND (Cloud Relay / Google Apps Script) -------------------
   // WAJIB DIGANTI setelah Apps Script di-deploy (lihat README.md Langkah 2).
@@ -34,8 +34,8 @@ const CONFIG = {
   // --- 6. JAM ABSEN DIBUKA (waktu WIB / Asia-Jakarta) -----------------------
   // Malam Jumat pukul 21:00 s/d Sabtu pukul 01:00.
   // Nilai "hari" pakai standar JavaScript: 0=Minggu, 1=Senin ... 6=Sabtu.
-  JAM_MULAI: { hari: 5, jam: 21, menit: 0 }, // Jumat 21:00
-  JAM_SELESAI: { hari: 6, jam: 1, menit: 0 }, // Sabtu 01:00
+  JAM_MULAI: { hari: 6, jam: 0, menit: 0 }, // Jumat 21:00
+  JAM_SELESAI: { hari: 0, jam: 23, menit: 59 }, // Sabtu 01:00
 
   // --- 7. JADWAL & PEMBAGIAN GRUP RONDA (M1 - M6) ---------------------------
   // Tambah / kurangi / ganti nama sesuai kebutuhan RT/RW Anda.
