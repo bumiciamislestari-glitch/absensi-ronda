@@ -11,43 +11,61 @@
   <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
 
     <!-- LOGO -->
-    <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-16 h-16 mx-auto rounded-full object-cover" />
+    <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-24 h-24 mx-auto rounded-full object-cover" />
 
     <h1 class="text-xl font-bold text-slate-800 text-center mt-3">Absensi Ronda Malam Ini</h1>
     <p id="grup-info" class="text-center text-slate-500 text-sm mt-1">Memuat jadwal grup…</p>
 
-    <!-- STATUS WAKTU -->
-    <div id="box-waktu" class="mt-5 rounded-xl border p-3 flex items-center gap-3 bg-slate-50">
-      <span id="dot-waktu" class="w-3 h-3 rounded-full bg-slate-400 shrink-0"></span>
-      <div>
-        <p class="font-medium text-slate-700 text-sm">Jam Absen</p>
-        <p id="teks-waktu" class="text-xs text-slate-500">Mengambil waktu server…</p>
+    <!-- PESAN JIKA HP INI SUDAH DIPAKAI ABSEN MINGGU INI -->
+    <div id="box-terkunci" class="hidden mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-center">
+      <p class="text-2xl">🔒</p>
+      <p id="teks-terkunci" class="text-amber-800 font-medium text-sm mt-1"></p>
+      <p class="text-amber-700 text-xs mt-1">Satu HP hanya bisa dipakai untuk 1x absen per minggu.</p>
+    </div>
+
+    <!-- AREA FORM ABSEN (disembunyikan kalau HP sudah pernah absen minggu ini) -->
+    <div id="area-form">
+      <!-- STATUS WAKTU -->
+      <div id="box-waktu" class="mt-5 rounded-xl border p-3 flex items-center gap-3 bg-slate-50">
+        <span id="dot-waktu" class="w-3 h-3 rounded-full bg-slate-400 shrink-0"></span>
+        <div>
+          <p class="font-medium text-slate-700 text-sm">Jam Absen</p>
+          <p id="teks-waktu" class="text-xs text-slate-500">Mengambil waktu server…</p>
+        </div>
       </div>
-    </div>
 
-    <!-- STATUS LOKASI -->
-    <div id="box-lokasi" class="mt-3 rounded-xl border p-3 flex items-center gap-3 bg-slate-50">
-      <span id="dot-lokasi" class="w-3 h-3 rounded-full bg-slate-400 shrink-0"></span>
-      <div>
-        <p class="font-medium text-slate-700 text-sm">Lokasi Anda</p>
-        <p id="teks-lokasi" class="text-xs text-slate-500">Meminta izin akses lokasi…</p>
+      <!-- STATUS LOKASI -->
+      <div id="box-lokasi" class="mt-3 rounded-xl border p-3 flex items-center gap-3 bg-slate-50">
+        <span id="dot-lokasi" class="w-3 h-3 rounded-full bg-slate-400 shrink-0"></span>
+        <div>
+          <p class="font-medium text-slate-700 text-sm">Lokasi Anda</p>
+          <p id="teks-lokasi" class="text-xs text-slate-500">Meminta izin akses lokasi…</p>
+        </div>
       </div>
+
+      <!-- FORM -->
+      <div class="mt-5">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Anda</label>
+        <select id="input-nama" class="w-full border rounded-lg p-2.5 text-sm bg-white">
+          <option value="">— Pilih nama —</option>
+        </select>
+      </div>
+
+      <!-- FOTO SELFIE (wajib, untuk mencegah titip absen) -->
+      <div class="mt-3">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Foto Selfie (wajib)</label>
+        <input id="input-foto" type="file" accept="image/*" capture="user"
+          class="w-full text-sm border rounded-lg p-2 bg-white" />
+        <img id="preview-foto" class="hidden mt-2 w-20 h-20 rounded-lg object-cover border" alt="Preview foto" />
+      </div>
+
+      <button id="btn-submit" disabled
+        class="mt-4 w-full py-3 rounded-xl font-semibold text-white bg-slate-300 cursor-not-allowed transition">
+        Absen Sekarang
+      </button>
+
+      <p id="pesan-hasil" class="mt-3 text-center text-sm"></p>
     </div>
-
-    <!-- FORM -->
-    <div class="mt-5">
-      <label class="block text-sm font-medium text-slate-700 mb-1">Nama Anda</label>
-      <select id="input-nama" class="w-full border rounded-lg p-2.5 text-sm bg-white">
-        <option value="">— Pilih nama —</option>
-      </select>
-    </div>
-
-    <button id="btn-submit" disabled
-      class="mt-4 w-full py-3 rounded-xl font-semibold text-white bg-slate-300 cursor-not-allowed transition">
-      Absen Sekarang
-    </button>
-
-    <p id="pesan-hasil" class="mt-3 text-center text-sm"></p>
 
   </div>
 
