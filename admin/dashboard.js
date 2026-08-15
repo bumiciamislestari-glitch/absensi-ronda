@@ -23,10 +23,37 @@ const statusSync   = document.getElementById("status-sync");
 const tabelJadwal  = document.getElementById("tabel-jadwal");
 const bodyRiwayat  = document.getElementById("body-riwayat");
 const kosongRiwayat = document.getElementById("kosong-riwayat");
+const paginasiRiwayat = document.getElementById("paginasi-riwayat");
 const bodyDendaDetail = document.getElementById("body-denda-detail");
 const kosongDenda  = document.getElementById("kosong-denda");
 const bodyRekap    = document.getElementById("body-rekap");
 const kosongRekap  = document.getElementById("kosong-rekap");
+
+const modalKonfirmasi = document.getElementById("modal-konfirmasi");
+const modalPesan   = document.getElementById("modal-pesan");
+const modalIya     = document.getElementById("modal-iya");
+const modalTidak   = document.getElementById("modal-tidak");
+
+// ============================================================================
+// MODAL KONFIRMASI — dipakai sebelum mengubah status lunas/belum lunas
+// supaya tidak salah klik / salah input data.
+// ============================================================================
+function konfirmasi(pesan, kalauIya) {
+  modalPesan.textContent = pesan;
+  modalKonfirmasi.classList.remove("hidden");
+
+  const tutup = () => modalKonfirmasi.classList.add("hidden");
+
+  const handlerIya = () => { tutup(); kalauIya(); bersihkan(); };
+  const handlerTidak = () => { tutup(); bersihkan(); };
+  function bersihkan() {
+    modalIya.removeEventListener("click", handlerIya);
+    modalTidak.removeEventListener("click", handlerTidak);
+  }
+
+  modalIya.addEventListener("click", handlerIya);
+  modalTidak.addEventListener("click", handlerTidak);
+}
 
 // ============================================================================
 // 0. GERBANG PIN
@@ -112,6 +139,7 @@ async function sinkronisasi() {
       }
     });
     simpanKehadiran(existing);
+    halamanRiwayat = 1; // kembali ke halaman 1 supaya data terbaru langsung terlihat
 
     // c) Auto-purge: hapus data di cloud karena sudah aman tersimpan lokal
     const urlPurge = `${CONFIG.WEBHOOK_URL}?action=purge&secret=${encodeURIComponent(CONFIG.ADMIN_SECRET)}`;
@@ -152,12 +180,22 @@ function renderJadwal() {
 }
 
 // ============================================================================
-// 5. RENDER: Riwayat Kehadiran
+// 5. RENDER: Riwayat Kehadiran (dengan pagination, 10 baris per halaman)
 // ============================================================================
+const UKURAN_HALAMAN_RIWAYAT = 10;
+let halamanRiwayat = 1;
+
 function renderRiwayat() {
-  const data = getKehadiran().slice().sort((a, b) => new Date(b.waktuServer) - new Date(a.waktuServer));
+  const semua = getKehadiran().slice().sort((a, b) => new Date(b.waktuServer) - new Date(a.waktuServer));
   bodyRiwayat.innerHTML = "";
-  kosongRiwayat.classList.toggle("hidden", data.length > 0);
+  kosongRiwayat.classList.toggle("hidden", semua.length > 0);
+
+  const totalHalaman = Math.max(1, Math.ceil(semua.length / UKURAN_HALAMAN_RIWAYAT));
+  if (halamanRiwayat > totalHalaman) halamanRiwayat = totalHalaman;
+  if (halamanRiwayat < 1) halamanRiwayat = 1;
+
+  const mulai = (halamanRiwayat - 1) * UKURAN_HALAMAN_RIWAYAT;
+  const data = semua.slice(mulai, mulai + UKURAN_HALAMAN_RIWAYAT);
 
   data.forEach((r) => {
     const tr = document.createElement("tr");
@@ -170,6 +208,52 @@ function renderRiwayat() {
       <td class="py-2 pr-3">${Math.round(r.jarak)}m</td>`;
     bodyRiwayat.appendChild(tr);
   });
+
+  renderPaginasiRiwayat(totalHalaman, semua.length);
+}
+
+// Membuat tombol "‹ Sebelumnya", nomor halaman, "Berikutnya ›" di bawah tabel
+function renderPaginasiRiwayat(totalHalaman, totalData) {
+  paginasiRiwayat.innerHTML = "";
+  if (totalData === 0) return;
+
+  const buatTombol = (label, halamanTujuan, aktif, nonaktif) => {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.disabled = !!nonaktif;
+    btn.className = "px-2.5 py-1 rounded-lg text-xs font-medium border mx-0.5 " + (
+      aktif ? "bg-slate-800 text-white border-slate-800"
+      : nonaktif ? "bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed"
+      : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+    );
+    btn.addEventListener("click", () => {
+      halamanRiwayat = halamanTujuan;
+      renderRiwayat();
+    });
+    return btn;
+  };
+
+  const wrap = document.createElement("div");
+  wrap.className = "flex flex-wrap items-center gap-1 mt-3 pt-3 border-t";
+
+  const info = document.createElement("span");
+  info.className = "text-xs text-slate-500 mr-2";
+  info.textContent = `Halaman ${halamanRiwayat} dari ${totalHalaman} (${totalData} data)`;
+  wrap.appendChild(info);
+
+  wrap.appendChild(buatTombol("‹ Sebelumnya", halamanRiwayat - 1, false, halamanRiwayat === 1));
+
+  // Tampilkan maksimal 5 nomor halaman supaya tidak terlalu panjang
+  let mulaiNomor = Math.max(1, halamanRiwayat - 2);
+  let akhirNomor = Math.min(totalHalaman, mulaiNomor + 4);
+  mulaiNomor = Math.max(1, akhirNomor - 4);
+  for (let i = mulaiNomor; i <= akhirNomor; i++) {
+    wrap.appendChild(buatTombol(String(i), i, i === halamanRiwayat, false));
+  }
+
+  wrap.appendChild(buatTombol("Berikutnya ›", halamanRiwayat + 1, false, halamanRiwayat === totalHalaman));
+
+  paginasiRiwayat.appendChild(wrap);
 }
 
 // ============================================================================
@@ -177,20 +261,24 @@ function renderRiwayat() {
 // ============================================================================
 function hitungDaftarDenda() {
   const kehadiran = getKehadiran();
-  const namaGrup = Object.keys(CONFIG.JADWAL);
   const acuan = new Date(CONFIG.ROTASI_ACUAN_TANGGAL + "T00:00:00");
   const sekarang = new Date();
 
-  const selisihHari = Math.round((sekarang - acuan) / (1000 * 60 * 60 * 24));
-  const selisihMinggu = Math.max(0, Math.floor(selisihHari / 7));
-
   const daftar = []; // { minggu, grup, nama, nominal }
+  let w = 0;
 
-  for (let w = 0; w <= selisihMinggu; w++) {
+  while (true) {
     const tglMinggu = new Date(acuan);
     tglMinggu.setDate(tglMinggu.getDate() + w * 7);
-    const mingguStr = tanggalMingguRonda(tglMinggu);
 
+    // Batas akhir jam absen minggu ini (mis. Sabtu 01:00). Selama batas ini
+    // belum lewat, minggu tersebut BELUM DIHITUNG sebagai bolos — supaya
+    // warga tidak dianggap "denda" sebelum jadwal rondanya sendiri terjadi.
+    const batasAkhir = new Date(tglMinggu);
+    batasAkhir.setHours(CONFIG.JAM_SELESAI.jam, CONFIG.JAM_SELESAI.menit, 0, 0);
+    if (batasAkhir > sekarang) break;
+
+    const mingguStr = tanggalMingguRonda(tglMinggu);
     const grup = grupMingguIni(tglMinggu);
     const anggota = CONFIG.JADWAL[grup] || [];
 
@@ -200,6 +288,9 @@ function hitungDaftarDenda() {
         daftar.push({ minggu: mingguStr, grup, nama, nominal: CONFIG.DENDA_PER_BOLOS });
       }
     });
+
+    w++;
+    if (w > 520) break; // pengaman anti infinite-loop (setara ~10 tahun)
   }
 
   return daftar.sort((a, b) => (a.minggu < b.minggu ? 1 : -1));
@@ -232,21 +323,32 @@ function renderDenda() {
         </span>
       </td>
       <td class="py-2 pr-3">
-        <button data-kunci="${kunci}" class="btn-toggle-lunas text-xs font-medium text-blue-600 hover:underline">
+        <button data-kunci="${kunci}" data-nama="${item.nama}" data-minggu="${item.minggu}"
+          class="btn-toggle-lunas text-xs font-medium text-blue-600 hover:underline">
           ${lunas ? "Tandai Belum Bayar" : "Tandai Lunas"}
         </button>
       </td>`;
     bodyDendaDetail.appendChild(tr);
   });
 
-  // pasang event listener tombol toggle
+  // pasang event listener tombol toggle — selalu konfirmasi dulu sebelum
+  // mengubah status, supaya tidak salah klik / salah input data.
   document.querySelectorAll(".btn-toggle-lunas").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kunci = btn.dataset.kunci;
       const status = getStatusDenda();
-      status[kunci] = !status[kunci];
-      simpanStatusDenda(status);
-      renderDenda(); // refresh tampilan
+      const lunasSekarang = !!status[kunci];
+
+      const pesan = lunasSekarang
+        ? `Yakin anda akan merubahnya? Status ${btn.dataset.nama} (minggu ${btn.dataset.minggu}) akan dikembalikan jadi Belum Bayar.`
+        : `Apakah benar ${btn.dataset.nama} sudah membayar denda minggu ${btn.dataset.minggu}?`;
+
+      konfirmasi(pesan, () => {
+        const statusTerbaru = getStatusDenda();
+        statusTerbaru[kunci] = !statusTerbaru[kunci];
+        simpanStatusDenda(statusTerbaru);
+        renderDenda(); // refresh tampilan
+      });
     });
   });
 
