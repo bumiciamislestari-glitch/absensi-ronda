@@ -26,7 +26,7 @@ const CONFIG = {
 
   // --- 4. PIN DASHBOARD ADMIN -----------------------------------------------
   // PIN untuk membuka Dashboard Admin di HP/laptop admin. Ganti sesukanya.
-  ADMIN_PIN: "192026",
+  ADMIN_PIN: "112233",
 
   // --- 5. NOMINAL DENDA -------------------------------------------------------
   DENDA_PER_BOLOS: 25000, // dalam Rupiah
@@ -42,7 +42,7 @@ const CONFIG = {
   JADWAL: {
     M1: ["Pak Aziz", "Pak Ujang", "Pak Arif", "Pak Nandang"],
     M2: ["Pak Omen", "Pak Nana", "Pak Dadan", "Pak Dudung"],
-    M3: ["Pak Sayyid", "Pak Feri", "Pak Egi", "Pak Ari", "Pak Karwan"],
+    M3: ["Pak Sayyid", "Pak Feri", "Pak Egi", "Pak Dodi", "Pak Karwan"],
     M4: ["Pak Asep", "Pak Iwan", "Pak Toni", "Pak Fajar"],
     M5: ["Pak Oky", "Pak Ali", "Pak Rian", "Pak Ahmad Dani", "Pak Alfian"],
     M6: ["Pak Anggi", "Pak Heri", "Pak Iik", "Pak Ayi"]
