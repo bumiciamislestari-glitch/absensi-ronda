@@ -58,18 +58,32 @@ const CONFIG = {
 // FUNGSI BANTU BERSAMA (dipakai oleh warga & admin) — TIDAK PERLU DIUBAH
 // ============================================================================
 
-// Menentukan grup (G1-G6) yang bertugas pada tanggal tertentu (default: hari ini)
+// Membulatkan sebuah tanggal maju ke hari Sabtu terdekat (kalau tanggalnya
+// sendiri Sabtu, hasilnya tanggal itu juga). Dipakai supaya "minggu ronda"
+// setiap tanggal (Minggu s/d Sabtu) selalu merujuk ke Sabtu penutup minggu
+// itu — bukan dibulatkan matematis yang bisa meleset di tengah minggu.
+function sabtuTerdekat(tanggal) {
+  const t = new Date(tanggal.getFullYear(), tanggal.getMonth(), tanggal.getDate());
+  const tambahHari = (6 - t.getDay() + 7) % 7; // 0 kalau hari ini sudah Sabtu
+  t.setDate(t.getDate() + tambahHari);
+  return t;
+}
+
+// Menentukan grup (G1-G6) yang bertugas pada tanggal tertentu (default: hari ini).
+// "Bertugas minggu ini" dihitung per blok Minggu-Sabtu: seluruh hari dalam
+// satu blok itu merujuk ke grup yang ronda pada Sabtu penutup blok tersebut,
+// jadi pergantian grup terjadi tepat di awal minggu (Minggu dini hari),
+// bukan tiba-tiba di tengah minggu.
 function grupMingguIni(tanggal) {
   tanggal = tanggal || new Date();
   const namaGrup = Object.keys(CONFIG.JADWAL); // ["G1","G2",...,"G6"]
   const acuan = new Date(CONFIG.ROTASI_ACUAN_TANGGAL + "T00:00:00");
 
-  // Normalisasi ke tengah malam supaya perbandingan tanggal akurat
-  const t = new Date(tanggal.getFullYear(), tanggal.getMonth(), tanggal.getDate());
-  const a = new Date(acuan.getFullYear(), acuan.getMonth(), acuan.getDate());
+  const sabtuAcuan = sabtuTerdekat(acuan);
+  const sabtuTarget = sabtuTerdekat(tanggal);
 
-  const selisihHari = Math.round((t - a) / (1000 * 60 * 60 * 24));
-  const selisihMinggu = Math.round(selisihHari / 7);
+  const selisihHari = Math.round((sabtuTarget - sabtuAcuan) / (1000 * 60 * 60 * 24));
+  const selisihMinggu = Math.round(selisihHari / 7); // selalu kelipatan 7 yang eksak
 
   const idxAcuan = namaGrup.indexOf(CONFIG.ROTASI_ACUAN_GRUP);
   let idx = (idxAcuan + selisihMinggu) % namaGrup.length;
