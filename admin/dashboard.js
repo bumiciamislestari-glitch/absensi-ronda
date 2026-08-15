@@ -26,6 +26,7 @@ const kosongRiwayat = document.getElementById("kosong-riwayat");
 const paginasiRiwayat = document.getElementById("paginasi-riwayat");
 const bodyDendaDetail = document.getElementById("body-denda-detail");
 const kosongDenda  = document.getElementById("kosong-denda");
+const paginasiDenda = document.getElementById("paginasi-denda");
 const bodyRekap    = document.getElementById("body-rekap");
 const kosongRekap  = document.getElementById("kosong-rekap");
 
@@ -218,12 +219,16 @@ function renderRiwayat() {
     bodyRiwayat.appendChild(tr);
   });
 
-  renderPaginasiRiwayat(totalHalaman, semua.length);
+  renderPaginasi(paginasiRiwayat, halamanRiwayat, totalHalaman, semua.length, (h) => {
+    halamanRiwayat = h;
+    renderRiwayat();
+  });
 }
 
-// Membuat tombol "‹ Sebelumnya", nomor halaman, "Berikutnya ›" di bawah tabel
-function renderPaginasiRiwayat(totalHalaman, totalData) {
-  paginasiRiwayat.innerHTML = "";
+// Fungsi pagination UMUM (dipakai oleh Riwayat Kehadiran & Daftar Denda) —
+// membuat tombol "‹ Sebelumnya", nomor halaman, "Berikutnya ›" di bawah tabel.
+function renderPaginasi(container, halamanSekarang, totalHalaman, totalData, onGantiHalaman) {
+  container.innerHTML = "";
   if (totalData === 0) return;
 
   const buatTombol = (label, halamanTujuan, aktif, nonaktif) => {
@@ -235,10 +240,7 @@ function renderPaginasiRiwayat(totalHalaman, totalData) {
       : nonaktif ? "bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed"
       : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
     );
-    btn.addEventListener("click", () => {
-      halamanRiwayat = halamanTujuan;
-      renderRiwayat();
-    });
+    btn.addEventListener("click", () => onGantiHalaman(halamanTujuan));
     return btn;
   };
 
@@ -247,22 +249,22 @@ function renderPaginasiRiwayat(totalHalaman, totalData) {
 
   const info = document.createElement("span");
   info.className = "text-xs text-slate-500 mr-2";
-  info.textContent = `Halaman ${halamanRiwayat} dari ${totalHalaman} (${totalData} data)`;
+  info.textContent = `Halaman ${halamanSekarang} dari ${totalHalaman} (${totalData} data)`;
   wrap.appendChild(info);
 
-  wrap.appendChild(buatTombol("‹ Sebelumnya", halamanRiwayat - 1, false, halamanRiwayat === 1));
+  wrap.appendChild(buatTombol("‹ Sebelumnya", halamanSekarang - 1, false, halamanSekarang === 1));
 
   // Tampilkan maksimal 5 nomor halaman supaya tidak terlalu panjang
-  let mulaiNomor = Math.max(1, halamanRiwayat - 2);
+  let mulaiNomor = Math.max(1, halamanSekarang - 2);
   let akhirNomor = Math.min(totalHalaman, mulaiNomor + 4);
   mulaiNomor = Math.max(1, akhirNomor - 4);
   for (let i = mulaiNomor; i <= akhirNomor; i++) {
-    wrap.appendChild(buatTombol(String(i), i, i === halamanRiwayat, false));
+    wrap.appendChild(buatTombol(String(i), i, i === halamanSekarang, false));
   }
 
-  wrap.appendChild(buatTombol("Berikutnya ›", halamanRiwayat + 1, false, halamanRiwayat === totalHalaman));
+  wrap.appendChild(buatTombol("Berikutnya ›", halamanSekarang + 1, false, halamanSekarang === totalHalaman));
 
-  paginasiRiwayat.appendChild(wrap);
+  container.appendChild(wrap);
 }
 
 // ============================================================================
@@ -308,14 +310,23 @@ function hitungDaftarDenda() {
 // ============================================================================
 // 7. RENDER: Daftar Denda (detail) + Rekap Akumulasi
 // ============================================================================
+const UKURAN_HALAMAN_DENDA = 10;
+let halamanDenda = 1;
+
 function renderDenda() {
-  const daftar = hitungDaftarDenda();
+  const daftar = hitungDaftarDenda(); // daftar LENGKAP — dipakai juga untuk rekap di bawah
   const statusDenda = getStatusDenda();
 
   bodyDendaDetail.innerHTML = "";
   kosongDenda.classList.toggle("hidden", daftar.length > 0);
 
-  daftar.forEach((item) => {
+  const totalHalamanDenda = Math.max(1, Math.ceil(daftar.length / UKURAN_HALAMAN_DENDA));
+  if (halamanDenda > totalHalamanDenda) halamanDenda = totalHalamanDenda;
+  if (halamanDenda < 1) halamanDenda = 1;
+  const mulaiDenda = (halamanDenda - 1) * UKURAN_HALAMAN_DENDA;
+  const daftarHalaman = daftar.slice(mulaiDenda, mulaiDenda + UKURAN_HALAMAN_DENDA); // hanya untuk tabel yg tampil
+
+  daftarHalaman.forEach((item) => {
     const kunci = `${item.nama}|${item.minggu}`;
     const lunas = !!statusDenda[kunci];
 
@@ -359,6 +370,11 @@ function renderDenda() {
         renderDenda(); // refresh tampilan
       });
     });
+  });
+
+  renderPaginasi(paginasiDenda, halamanDenda, totalHalamanDenda, daftar.length, (h) => {
+    halamanDenda = h;
+    renderDenda();
   });
 
   // --- Rekap akumulasi per warga (yang BELUM lunas saja) ---
