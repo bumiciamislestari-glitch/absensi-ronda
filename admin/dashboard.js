@@ -34,6 +34,12 @@ const modalPesan   = document.getElementById("modal-pesan");
 const modalIya     = document.getElementById("modal-iya");
 const modalTidak   = document.getElementById("modal-tidak");
 
+const btnBulanSebelumnya = document.getElementById("btn-bulan-sebelumnya");
+const btnBulanBerikutnya = document.getElementById("btn-bulan-berikutnya");
+const teksBulanKalender  = document.getElementById("teks-bulan-kalender");
+const kalenderGrid       = document.getElementById("kalender-grid");
+const infoKalender       = document.getElementById("info-kalender");
+
 // ============================================================================
 // MODAL KONFIRMASI — dipakai sebelum mengubah status lunas/belum lunas
 // supaya tidak salah klik / salah input data.
@@ -133,7 +139,8 @@ async function sinkronisasi() {
           grup: row.grup || cariGrupDariNama(row.nama),
           waktuServer: row.waktuServer,
           minggu: tanggalMingguRonda(new Date(row.waktuServer)),
-          jarak: row.jarak
+          jarak: row.jarak,
+          fotoUrl: row.fotoUrl || ""
         });
         ditambah++;
       }
@@ -167,13 +174,14 @@ function renderJadwal() {
   Object.entries(CONFIG.JADWAL).forEach(([grup, anggota]) => {
     const aktif = grup === grupAktif;
     const kartu = document.createElement("div");
-    kartu.className = `rounded-xl border p-3 ${aktif ? "border-emerald-400 bg-emerald-50" : "border-slate-200"}`;
+    kartu.className = `rounded-lg border p-2 ${aktif ? "border-emerald-400 bg-emerald-50" : "border-slate-200"}`;
+    kartu.title = aktif ? `${grup} — bertugas minggu ini` : grup;
     kartu.innerHTML = `
-      <p class="font-semibold text-sm ${aktif ? "text-emerald-700" : "text-slate-700"}">
-        ${grup} ${aktif ? "— bertugas minggu ini" : ""}
+      <p class="font-bold text-xs ${aktif ? "text-emerald-700" : "text-slate-700"}">
+        ${grup}${aktif ? " ★" : ""}
       </p>
-      <ul class="text-sm text-slate-600 mt-1 list-disc list-inside">
-        ${anggota.map((n) => `<li>${n}</li>`).join("")}
+      <ul class="text-[11px] leading-tight text-slate-600 mt-1 space-y-0.5">
+        ${anggota.map((n) => `<li class="truncate">${n}</li>`).join("")}
       </ul>`;
     tabelJadwal.appendChild(kartu);
   });
@@ -205,7 +213,8 @@ function renderRiwayat() {
       <td class="py-2 pr-3">${r.nama}</td>
       <td class="py-2 pr-3">${r.grup}</td>
       <td class="py-2 pr-3">${new Date(r.waktuServer).toLocaleString("id-ID")}</td>
-      <td class="py-2 pr-3">${Math.round(r.jarak)}m</td>`;
+      <td class="py-2 pr-3">${Math.round(r.jarak)}m</td>
+      <td class="py-2 pr-3">${r.fotoUrl ? `<a href="${r.fotoUrl}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Lihat Foto</a>` : "-"}</td>`;
     bodyRiwayat.appendChild(tr);
   });
 
@@ -383,6 +392,102 @@ function renderDenda() {
 // ============================================================================
 // 8. RENDER SEMUA + INISIALISASI
 // ============================================================================
+// ============================================================================
+// KALENDER JADWAL RONDA — Jumat ditandai lingkaran merah (bukan Minggu
+// seperti kalender pada umumnya, karena ronda selalu malam Jumat/Sabtu
+// dini hari). Klik tanggal Jumat untuk lihat grup yang bertugas.
+// ============================================================================
+const NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli",
+  "Agustus","September","Oktober","November","Desember"];
+const NAMA_HARI_PENDEK = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+
+let kalenderBulan = new Date().getMonth();
+let kalenderTahun = new Date().getFullYear();
+let tanggalDipilihKalender = null;
+
+// Grup yang bertugas untuk malam Jumat tertentu = grup pada "minggu ronda"-
+// nya, yaitu Sabtu besoknya (reuse grupMingguIni dari shared/config.js).
+function grupUntukJumat(tanggalJumat) {
+  const sabtu = new Date(tanggalJumat);
+  sabtu.setDate(sabtu.getDate() + 1);
+  return grupMingguIni(sabtu);
+}
+
+function renderKalender() {
+  teksBulanKalender.textContent = `${NAMA_BULAN[kalenderBulan]} ${kalenderTahun}`;
+  kalenderGrid.innerHTML = "";
+
+  NAMA_HARI_PENDEK.forEach((h, i) => {
+    const el = document.createElement("div");
+    el.className = "text-center text-xs font-medium py-1 " + (i === 5 ? "text-red-500" : "text-slate-400");
+    el.textContent = h;
+    kalenderGrid.appendChild(el);
+  });
+
+  const tanggal1 = new Date(kalenderTahun, kalenderBulan, 1);
+  const jumlahHari = new Date(kalenderTahun, kalenderBulan + 1, 0).getDate();
+  const offsetAwal = tanggal1.getDay(); // 0 = Minggu
+
+  for (let i = 0; i < offsetAwal; i++) {
+    kalenderGrid.appendChild(document.createElement("div"));
+  }
+
+  for (let d = 1; d <= jumlahHari; d++) {
+    const tgl = new Date(kalenderTahun, kalenderBulan, d);
+    const isJumat = tgl.getDay() === 5;
+    const isTerpilih = !!tanggalDipilihKalender &&
+      tanggalDipilihKalender.getFullYear() === tgl.getFullYear() &&
+      tanggalDipilihKalender.getMonth() === tgl.getMonth() &&
+      tanggalDipilihKalender.getDate() === tgl.getDate();
+
+    const sel = document.createElement("button");
+    sel.type = "button";
+    sel.textContent = String(d);
+    sel.disabled = !isJumat;
+
+    let kelas = "aspect-square flex items-center justify-center rounded-full text-sm ";
+    if (isTerpilih) {
+      kelas += "bg-red-500 text-white font-bold";
+    } else if (isJumat) {
+      kelas += "border-2 border-red-500 text-red-600 font-semibold hover:bg-red-50 cursor-pointer";
+    } else {
+      kelas += "text-slate-600";
+    }
+    sel.className = kelas;
+
+    if (isJumat) {
+      sel.addEventListener("click", () => {
+        tanggalDipilihKalender = tgl;
+        renderKalender();
+        tampilkanGrupTerpilihKalender(tgl);
+      });
+    }
+
+    kalenderGrid.appendChild(sel);
+  }
+}
+
+function tampilkanGrupTerpilihKalender(tglJumat) {
+  const grup = grupUntukJumat(tglJumat);
+  const tglText = tglJumat.toLocaleDateString("id-ID", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric"
+  });
+  infoKalender.classList.remove("hidden");
+  infoKalender.innerHTML = `Malam Sabtu <strong>${tglText}</strong> — grup bertugas: <span class="font-bold">${grup}</span>`;
+}
+
+btnBulanSebelumnya.addEventListener("click", () => {
+  kalenderBulan--;
+  if (kalenderBulan < 0) { kalenderBulan = 11; kalenderTahun--; }
+  renderKalender();
+});
+
+btnBulanBerikutnya.addEventListener("click", () => {
+  kalenderBulan++;
+  if (kalenderBulan > 11) { kalenderBulan = 0; kalenderTahun++; }
+  renderKalender();
+});
+
 function renderSemua() {
   renderJadwal();
   renderRiwayat();
@@ -392,6 +497,7 @@ function renderSemua() {
 function mulaiDashboard() {
   perbaruiJamKalender();
   setInterval(perbaruiJamKalender, 1000);
+  renderKalender();
   renderSemua();
   // Sinkronisasi otomatis setiap kali dashboard dibuka
   sinkronisasi();
