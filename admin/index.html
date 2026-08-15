@@ -29,7 +29,7 @@
     <!-- HEADER: Jam, Kalender, Grup bertugas -->
     <div class="bg-white rounded-2xl shadow p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="flex items-center gap-3">
-        <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-14 h-14 rounded-full object-cover shrink-0" />
+        <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-20 h-20 rounded-full object-cover shrink-0" />
         <div>
           <p id="teks-tanggal" class="text-slate-500 text-sm">memuat tanggal…</p>
           <p id="teks-jam" class="text-3xl font-bold text-slate-800 tabular-nums">--:--:--</p>
@@ -41,27 +41,32 @@
       </div>
     </div>
 
-    <!-- SINKRONISASI -->
-    <div class="bg-white rounded-2xl shadow p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <p class="font-semibold text-slate-800">Sinkronisasi Data Cloud</p>
-        <p id="status-sync" class="text-xs text-slate-500 mt-0.5">Belum pernah sinkron.</p>
-      </div>
-      <button id="btn-sync" class="px-4 py-2.5 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700">
-        Sinkronisasi Sekarang
-      </button>
-    </div>
+    <!-- KALENDER (kiri) & SINKRONISASI (kanan), sejajar -->
+    <div class="grid md:grid-cols-2 gap-4 items-start">
 
-    <!-- KALENDER JADWAL RONDA -->
-    <div class="bg-white rounded-2xl shadow p-5">
-      <div class="flex items-center justify-between mb-3">
-        <button id="btn-bulan-sebelumnya" type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 font-bold">‹</button>
-        <h2 id="teks-bulan-kalender" class="font-semibold text-slate-800">-</h2>
-        <button id="btn-bulan-berikutnya" type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 font-bold">›</button>
+      <!-- KALENDER JADWAL RONDA -->
+      <div class="bg-white rounded-2xl shadow p-3">
+        <div class="flex items-center justify-between mb-2">
+          <button id="btn-bulan-sebelumnya" type="button" class="w-6 h-6 rounded-lg hover:bg-slate-100 text-slate-600 font-bold text-sm">‹</button>
+          <h2 id="teks-bulan-kalender" class="font-semibold text-slate-800 text-sm">-</h2>
+          <button id="btn-bulan-berikutnya" type="button" class="w-6 h-6 rounded-lg hover:bg-slate-100 text-slate-600 font-bold text-sm">›</button>
+        </div>
+        <div id="kalender-grid" class="grid grid-cols-7 gap-0.5 max-w-xs mx-auto"></div>
+        <p id="info-kalender" class="hidden mt-2 text-xs text-center bg-emerald-50 text-emerald-800 rounded-lg p-2"></p>
+        <p class="text-[10px] text-slate-400 text-center mt-2">🔴 = malam Jumat (ronda). Klik untuk lihat grup bertugas.</p>
       </div>
-      <div id="kalender-grid" class="grid grid-cols-7 gap-1"></div>
-      <p id="info-kalender" class="hidden mt-3 text-sm text-center bg-emerald-50 text-emerald-800 rounded-lg p-2"></p>
-      <p class="text-xs text-slate-400 text-center mt-2">Tanggal berlingkar merah = malam Jumat (ronda). Klik untuk lihat grup bertugas.</p>
+
+      <!-- SINKRONISASI -->
+      <div class="bg-white rounded-2xl shadow p-5 flex flex-col justify-center h-full gap-3">
+        <div>
+          <p class="font-semibold text-slate-800">Sinkronisasi Data Cloud</p>
+          <p id="status-sync" class="text-xs text-slate-500 mt-0.5">Belum pernah sinkron.</p>
+        </div>
+        <button id="btn-sync" class="px-4 py-2.5 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700">
+          Sinkronisasi Sekarang
+        </button>
+      </div>
+
     </div>
 
     <!-- JADWAL MASTER -->
@@ -110,6 +115,7 @@
           <tbody id="body-denda-detail"></tbody>
         </table>
         <p id="kosong-denda" class="text-slate-400 text-sm py-4 text-center hidden">Tidak ada warga yang bolos. 🎉</p>
+        <div id="paginasi-denda"></div>
       </div>
     </div>
 
