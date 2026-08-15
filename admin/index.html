@@ -11,7 +11,7 @@
   <!-- ======================= GERBANG PIN ======================= -->
   <div id="gerbang-pin" class="fixed inset-0 bg-slate-900/90 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-xs text-center">
-      <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-14 h-14 mx-auto rounded-full object-cover mb-2" />
+      <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-24 h-24 mx-auto rounded-full object-cover mb-2" />
       <h1 class="font-bold text-lg text-slate-800">Dashboard Admin Ronda</h1>
       <p class="text-sm text-slate-500 mt-1">Masukkan PIN untuk membuka</p>
       <input id="input-pin" type="password" inputmode="numeric" maxlength="6"
@@ -29,7 +29,7 @@
     <!-- HEADER: Jam, Kalender, Grup bertugas -->
     <div class="bg-white rounded-2xl shadow p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="flex items-center gap-3">
-        <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-10 h-10 rounded-full object-cover shrink-0" />
+        <img src="../shared/logo.jpg" alt="Logo Samesta Bumi Ciamis Lestari" class="w-14 h-14 rounded-full object-cover shrink-0" />
         <div>
           <p id="teks-tanggal" class="text-slate-500 text-sm">memuat tanggal…</p>
           <p id="teks-jam" class="text-3xl font-bold text-slate-800 tabular-nums">--:--:--</p>
@@ -52,10 +52,22 @@
       </button>
     </div>
 
+    <!-- KALENDER JADWAL RONDA -->
+    <div class="bg-white rounded-2xl shadow p-5">
+      <div class="flex items-center justify-between mb-3">
+        <button id="btn-bulan-sebelumnya" type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 font-bold">‹</button>
+        <h2 id="teks-bulan-kalender" class="font-semibold text-slate-800">-</h2>
+        <button id="btn-bulan-berikutnya" type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 font-bold">›</button>
+      </div>
+      <div id="kalender-grid" class="grid grid-cols-7 gap-1"></div>
+      <p id="info-kalender" class="hidden mt-3 text-sm text-center bg-emerald-50 text-emerald-800 rounded-lg p-2"></p>
+      <p class="text-xs text-slate-400 text-center mt-2">Tanggal berlingkar merah = malam Jumat (ronda). Klik untuk lihat grup bertugas.</p>
+    </div>
+
     <!-- JADWAL MASTER -->
     <div class="bg-white rounded-2xl shadow p-5">
       <h2 class="font-semibold text-slate-800 mb-3">Jadwal Master (G1 - G6)</h2>
-      <div id="tabel-jadwal" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      <div id="tabel-jadwal" class="grid grid-cols-3 gap-2"></div>
     </div>
 
     <!-- RIWAYAT KEHADIRAN -->
@@ -70,6 +82,7 @@
               <th class="py-2 pr-3">Grup</th>
               <th class="py-2 pr-3">Waktu Absen</th>
               <th class="py-2 pr-3">Jarak</th>
+              <th class="py-2 pr-3">Foto</th>
             </tr>
           </thead>
           <tbody id="body-riwayat"></tbody>
